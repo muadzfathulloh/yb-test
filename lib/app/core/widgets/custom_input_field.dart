@@ -55,40 +55,16 @@ class AppTextField extends StatefulWidget {
 
 class _AppTextFieldState extends State<AppTextField> {
   bool _obscureText = true;
-  bool _hasText = false;
 
   @override
   void initState() {
     super.initState();
     _obscureText = widget.isPassword || widget.obscureText;
-    _hasText = widget.controller?.text.isNotEmpty ?? false;
-
-    // Listen to text changes to show/hide clear button
-    widget.controller?.addListener(_onTextChanged);
-  }
-
-  @override
-  void dispose() {
-    widget.controller?.removeListener(_onTextChanged);
-    super.dispose();
-  }
-
-  void _onTextChanged() {
-    setState(() {
-      _hasText = widget.controller?.text.isNotEmpty ?? false;
-    });
   }
 
   void _toggleVisibility() {
     setState(() {
       _obscureText = !_obscureText;
-    });
-  }
-
-  void _clearText() {
-    widget.controller?.clear();
-    setState(() {
-      _hasText = false;
     });
   }
 
@@ -143,10 +119,18 @@ class _AppTextFieldState extends State<AppTextField> {
                     ),
                     onPressed: _toggleVisibility,
                   )
-                : (hasError && _hasText
-                      ? IconButton(
-                          icon: Icon(Icons.close, color: AppColors.error, size: 20),
-                          onPressed: _clearText,
+                : (widget.controller != null
+                      ? ValueListenableBuilder<TextEditingValue>(
+                          valueListenable: widget.controller!,
+                          builder: (context, value, child) {
+                            if (hasError && value.text.isNotEmpty) {
+                              return IconButton(
+                                icon: const Icon(Icons.close, color: AppColors.error, size: 20),
+                                onPressed: () => widget.controller?.clear(),
+                              );
+                            }
+                            return widget.suffixIcon ?? const SizedBox.shrink();
+                          },
                         )
                       : widget.suffixIcon),
             contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
@@ -179,7 +163,7 @@ class _AppTextFieldState extends State<AppTextField> {
           const SizedBox(height: 4),
           Row(
             children: [
-              Icon(Icons.error_outline, size: 14, color: AppColors.error),
+              const Icon(Icons.error_outline, size: 14, color: AppColors.error),
               const SizedBox(width: 4),
               Expanded(
                 child: Text(

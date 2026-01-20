@@ -20,19 +20,18 @@ class LoginController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    emailController.addListener(_emailListener);
+  }
 
-    // Add listeners to validate on change
-    emailController.addListener(() {
-      if (emailError.value != null) {
-        validateEmail();
-      }
-    });
+  void _emailListener() {
+    if (emailError.value != null) {
+      validateEmail();
+    }
   }
 
   @override
   void onClose() {
-    emailController.dispose();
-    passwordController.dispose();
+    emailController.removeListener(_emailListener);
     super.onClose();
   }
 
@@ -95,10 +94,13 @@ class LoginController extends GetxController {
         );
 
         if (result.success) {
+          Get.focusScope?.unfocus();
           if (result.isFirstTime) {
             Get.toNamed('/otp-verification', arguments: {'contact': emailController.text.trim()});
           } else {
+            // Success, navigate away - don't trigger final isLoading updates
             Get.offAllNamed('/main');
+            return; // Exit early
           }
         } else {
           Get.snackbar(
@@ -110,6 +112,7 @@ class LoginController extends GetxController {
           );
         }
       } catch (e) {
+        isLoading.value = false;
         Get.snackbar(
           'Error',
           'An unexpected error occurred',
@@ -117,8 +120,6 @@ class LoginController extends GetxController {
           backgroundColor: Colors.red.withOpacity(0.8),
           colorText: Colors.white,
         );
-      } finally {
-        isLoading.value = false;
       }
     }
   }

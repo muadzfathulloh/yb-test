@@ -7,28 +7,8 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/custom_input_field.dart';
 import '../controllers/signup_controller.dart';
 
-class SignupView extends StatefulWidget {
+class SignupView extends GetView<SignupController> {
   const SignupView({super.key});
-
-  @override
-  State<SignupView> createState() => _SignupViewState();
-}
-
-class _SignupViewState extends State<SignupView> {
-  late final SignupController controller;
-
-  @override
-  void initState() {
-    super.initState();
-    // Get controller and reset immediately
-    controller = Get.find<SignupController>();
-    controller.emailError.value = null;
-    controller.emailConfirmationError.value = null;
-    controller.passwordError.value = null;
-    controller.emailController.clear();
-    controller.emailConfirmationController.clear();
-    controller.passwordController.clear();
-  }
 
   @override
   Widget build(BuildContext context) {

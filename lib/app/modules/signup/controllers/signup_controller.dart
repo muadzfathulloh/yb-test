@@ -18,30 +18,29 @@ class SignupController extends GetxController {
   @override
   void onInit() {
     super.onInit();
+    emailController.addListener(_emailListener);
+    emailConfirmationController.addListener(_emailConfirmationListener);
+  }
 
-    // Add listeners to validate on change
-    emailController.addListener(() {
-      if (emailError.value != null) {
-        validateEmail();
-      }
-      // Also revalidate confirmation if it has been touched
-      if (emailConfirmationError.value != null && emailConfirmationController.text.isNotEmpty) {
-        validateEmailConfirmation();
-      }
-    });
+  void _emailListener() {
+    if (emailError.value != null) {
+      validateEmail();
+    }
+    if (emailConfirmationError.value != null && emailConfirmationController.text.isNotEmpty) {
+      validateEmailConfirmation();
+    }
+  }
 
-    emailConfirmationController.addListener(() {
-      if (emailConfirmationError.value != null) {
-        validateEmailConfirmation();
-      }
-    });
+  void _emailConfirmationListener() {
+    if (emailConfirmationError.value != null) {
+      validateEmailConfirmation();
+    }
   }
 
   @override
   void onClose() {
-    emailController.dispose();
-    emailConfirmationController.dispose();
-    passwordController.dispose();
+    emailController.removeListener(_emailListener);
+    emailConfirmationController.removeListener(_emailConfirmationListener);
     super.onClose();
   }
 
@@ -134,16 +133,21 @@ class SignupController extends GetxController {
     if (isEmailValid && isEmailConfirmationValid && isPasswordValid) {
       isLoading.value = true;
 
+      // Unfocus before potential navigation
+      Get.focusScope?.unfocus();
+
       // Simulate network request
       await Future.delayed(const Duration(seconds: 2));
 
-      isLoading.value = false;
+      // Don't set isLoading to false here if we're navigating away
+      // to avoid triggering an Obx rebuild of the disposing page.
 
       Get.snackbar(
         'Success',
         'Account created successfully. Please login.',
         backgroundColor: Colors.green.withOpacity(0.1),
         colorText: Colors.green,
+        snackPosition: SnackPosition.TOP,
       );
 
       // Back to login

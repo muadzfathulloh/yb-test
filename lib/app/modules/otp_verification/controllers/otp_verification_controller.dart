@@ -39,7 +39,6 @@ class OtpVerificationController extends GetxController {
   @override
   void onClose() {
     _timer?.cancel();
-    pinController.dispose();
     super.onClose();
   }
 
@@ -75,6 +74,7 @@ class OtpVerificationController extends GetxController {
       final success = await _authService.verifyOtp(contact, otp);
 
       if (success) {
+        Get.focusScope?.unfocus();
         Get.snackbar(
           'Success',
           'Verification successful',
@@ -82,6 +82,7 @@ class OtpVerificationController extends GetxController {
           colorText: Colors.green,
         );
         Get.offAllNamed('/main');
+        return;
       } else {
         Get.snackbar(
           'Error',
